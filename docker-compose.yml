@@ -1,0 +1,10 @@
+version: '3.2'
+services:
+  rrii:
+    image: nachoyegro/rrii:0.0.4
+    container_name: rrii
+    restart: always
+    volumes:
+      - .:/code
+    ports:
+      - "8084:8000"

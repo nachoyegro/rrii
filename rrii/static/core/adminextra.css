@@ -1,4 +1,25 @@
 :root {
-    --primary: #00B7C6 !important;
-    --secondary: #00B7C6 !important;
+    --primary: #a42339 !important;
+    --secondary: #a42339 !important;
 }
+
+#site-name {
+    margin-left: 1em;
+    font-size: 2em;
+}
+
+.img-header {
+    width:100px; /* you can use % */
+    height: auto;
+}
+
+p {
+    font-family : "Roboto"
+   }
+   h1 {
+    font-family: "Roboto"
+   }
+  
+.header-padding {
+    padding: 20px 40px !important;
+  }

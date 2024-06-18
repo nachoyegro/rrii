@@ -39,3 +39,17 @@ class Materia(models.Model):
 
     def __str__(self):
         return "%s" % (self.nombre)    
+    
+class Alumno(models.Model):
+    nombre = models.CharField(max_length=128)
+    apellido = models.CharField(max_length=128)
+    universidad = models.ForeignKey(Universidad)
+
+class Convocatoria(models.Model):
+    universidad = models.ForeignKey(Universidad)
+    carrera = models.ForeignKey(Carrera)
+    anio = models.IntegerField()
+
+class SolicitudAlumno(models.Model):
+    alumno = models.ForeignKey(Alumno)
+    convocatoria = models.ForeignKey(Convocatoria)

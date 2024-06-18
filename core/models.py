@@ -1,4 +1,5 @@
 from django.db import models
+from tinymce.models import HTMLField
 
 class Universidad(models.Model):
     nombre = models.CharField(max_length=128)
@@ -43,13 +44,14 @@ class Materia(models.Model):
 class Alumno(models.Model):
     nombre = models.CharField(max_length=128)
     apellido = models.CharField(max_length=128)
-    universidad = models.ForeignKey(Universidad)
+    universidad = models.ForeignKey(Universidad, on_delete=models.SET_NULL, blank=True, null=True)
 
 class Convocatoria(models.Model):
-    universidad = models.ForeignKey(Universidad)
-    carrera = models.ForeignKey(Carrera)
-    anio = models.IntegerField()
+    universidad = models.ForeignKey(Universidad, on_delete=models.SET_NULL, blank=True, null=True)
+    carrera = models.ForeignKey(Carrera, on_delete=models.SET_NULL, blank=True, null=True)
+    anio = models.IntegerField(verbose_name="Año")
+    descripcion = HTMLField()
 
 class SolicitudAlumno(models.Model):
-    alumno = models.ForeignKey(Alumno)
-    convocatoria = models.ForeignKey(Convocatoria)
+    alumno = models.ForeignKey(Alumno, on_delete=models.SET_NULL, blank=True, null=True)
+    convocatoria = models.ForeignKey(Convocatoria, on_delete=models.SET_NULL, blank=True, null=True)

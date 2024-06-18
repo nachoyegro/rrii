@@ -18,6 +18,8 @@ admin.site.register(Universidad, UniversidadAdmin)
 admin.site.register(Carrera, CarreraAdmin)
 admin.site.register(Programa, ProgramaAdmin)
 admin.site.register(Materia, MateriaAdmin)
+admin.site.register(SolicitudAlumno)
+admin.site.register(Convocatoria)
 admin.site.site_header = "Relaciones Internacionales"
 admin.site.site_title = "Relaciones Internacionales"
 admin.site.index_title = "Relaciones Internacionales"

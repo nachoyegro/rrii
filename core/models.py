@@ -40,18 +40,21 @@ class Materia(models.Model):
 
     def __str__(self):
         return "%s" % (self.nombre)    
-    
+
+# TODO: diferenciar alumnos unq y extranjeros
 class Alumno(models.Model):
     nombre = models.CharField(max_length=128)
     apellido = models.CharField(max_length=128)
     universidad = models.ForeignKey(Universidad, on_delete=models.SET_NULL, blank=True, null=True)
 
+# TODO: diferenciar entre convocatorias propias y extranjeras
 class Convocatoria(models.Model):
     universidad = models.ForeignKey(Universidad, on_delete=models.SET_NULL, blank=True, null=True)
     carrera = models.ForeignKey(Carrera, on_delete=models.SET_NULL, blank=True, null=True)
     anio = models.IntegerField(verbose_name="Año")
     descripcion = HTMLField()
 
+# TODO: modelar estados
 class SolicitudAlumno(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.SET_NULL, blank=True, null=True)
     convocatoria = models.ForeignKey(Convocatoria, on_delete=models.SET_NULL, blank=True, null=True)

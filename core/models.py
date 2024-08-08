@@ -1,5 +1,6 @@
 from django.db import models
 from tinymce.models import HTMLField
+from django.contrib.auth.models import User
 
 class Universidad(models.Model):
     nombre = models.CharField(max_length=128)
@@ -45,7 +46,11 @@ class Materia(models.Model):
 class Alumno(models.Model):
     nombre = models.CharField(max_length=128)
     apellido = models.CharField(max_length=128)
+    legajo = models.CharField(max_length=32)
     universidad = models.ForeignKey(Universidad, on_delete=models.SET_NULL, blank=True, null=True)
+
+    def __str__(self):
+        return '%s - %s, %s' % (self.legajo, self.apellido, self.nombre)
 
 # TODO: diferenciar entre convocatorias propias y extranjeras
 class Convocatoria(models.Model):
@@ -54,7 +59,21 @@ class Convocatoria(models.Model):
     anio = models.IntegerField(verbose_name="Año")
     descripcion = HTMLField()
 
+    def __str__(self):
+        return '%s - %s - %d' % (self.universidad, self.carrera, self.anio)
+
 # TODO: modelar estados
 class SolicitudAlumno(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.SET_NULL, blank=True, null=True)
     convocatoria = models.ForeignKey(Convocatoria, on_delete=models.SET_NULL, blank=True, null=True)
+
+
+class UserProfile(models.Model):  
+    user = models.ForeignKey(User, unique=True, on_delete=models.CASCADE)
+    universidad = models.ForeignKey(Universidad, on_delete=models.CASCADE)
+
+    def __unicode__(self):
+        return u'Perfil de usuario de: %s' % (self.user.username)
+
+    def __str__(self):
+        return 'Perfil de usuario de: %s' % (self.user.username)

@@ -4,12 +4,13 @@ from django.contrib.auth.models import User
 
 class Universidad(models.Model):
     nombre = models.CharField(max_length=128)
+    sigla = models.CharField(max_length=12)
 
     class Meta:
         verbose_name_plural = "Universidades"    
 
     def __str__(self):
-        return "%s" % (self.nombre)    
+        return "%s" % (self.sigla)    
 
 class Carrera(models.Model):
     universidad = models.ForeignKey(Universidad, on_delete=models.SET_NULL, blank=True, null=True)
@@ -57,7 +58,9 @@ class Convocatoria(models.Model):
     universidad = models.ForeignKey(Universidad, on_delete=models.SET_NULL, blank=True, null=True)
     carrera = models.ForeignKey(Carrera, on_delete=models.SET_NULL, blank=True, null=True)
     anio = models.IntegerField(verbose_name="Año")
-    descripcion = HTMLField()
+    activa = models.BooleanField(default=False)
+    #descripcion = HTMLField()
+    descripcion = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return '%s - %s - %d' % (self.universidad, self.carrera, self.anio)
@@ -67,10 +70,10 @@ class SolicitudAlumno(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.SET_NULL, blank=True, null=True)
     convocatoria = models.ForeignKey(Convocatoria, on_delete=models.SET_NULL, blank=True, null=True)
 
-
 class UserProfile(models.Model):  
     user = models.ForeignKey(User, unique=True, on_delete=models.CASCADE)
     universidad = models.ForeignKey(Universidad, on_delete=models.CASCADE)
+    alumno = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u'Perfil de usuario de: %s' % (self.user.username)

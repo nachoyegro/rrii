@@ -42,6 +42,9 @@ class UserProfileInline(admin.StackedInline):
 class UserProfileAdmin(UserAdmin):
     inlines = [UserProfileInline,]
 
+class ConvocatoriaAdmin(admin.ModelAdmin):
+    list_display = ('universidad', 'carrera', 'anio', 'activa')
+
 class AlumnoAdmin(FiltradoUniversidadAdmin):
     list_display = ('legajo', 'apellido', 'nombre', 'universidad')
 
@@ -61,9 +64,13 @@ class SolicitudAlumnoAdmin(admin.ModelAdmin):
     # Filtro los campos del form en base a la universidad
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         # Filtro los alumnos del form
-        if not request.user.is_superuser and db_field.name == "alumno":
-            universidad = UserProfile.objects.get(user=request.user).universidad
-            kwargs["queryset"] = Alumno.objects.filter(universidad=universidad) #Hago esto para transformarlo en queryset
+        if not request.user.is_superuser:
+            if db_field.name == "alumno":
+                universidad = UserProfile.objects.get(user=request.user).universidad
+                kwargs["queryset"] = Alumno.objects.filter(universidad=universidad)  #Hago esto para transformarlo en queryset
+            if db_field.name == "convocatoria":
+                # Si el usuario es externo, solo muestro las convocatorias de UNQ
+                kwargs["queryset"] = Convocatoria.objects.filter(universidad__sigla='UNQ') 
         # TODO: filtrar convocatorias segun corresponda al perfil de usuario
         return super(SolicitudAlumnoAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -74,7 +81,7 @@ admin.site.register(Carrera, CarreraAdmin)
 admin.site.register(Programa, ProgramaAdmin)
 admin.site.register(Materia, MateriaAdmin)
 admin.site.register(SolicitudAlumno, SolicitudAlumnoAdmin)
-admin.site.register(Convocatoria)
+admin.site.register(Convocatoria, ConvocatoriaAdmin)
 admin.site.register(Alumno, AlumnoAdmin)
 admin.site.site_header = "Relaciones Internacionales"
 admin.site.site_title = "Relaciones Internacionales"

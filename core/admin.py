@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.urls import path, include
 from core.models import *
+from core.views import *
 
 class FiltradoUniversidadAdmin(admin.ModelAdmin):
     exclude = ['user',]
@@ -49,7 +51,18 @@ class AlumnoAdmin(FiltradoUniversidadAdmin):
     list_display = ('legajo', 'apellido', 'nombre', 'universidad')
 
 class SolicitudAlumnoAdmin(admin.ModelAdmin):
-    list_display = ('convocatoria', 'alumno')
+    list_display = ('convocatoria', 'alumno', 'estado')
+    readonly_fields = ('estado',)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        nuevas_urls = [ path(r'^(.+)/aprobar/$', self.admin_site.admin_view(self.aprobar),
+                name='aprobar_view'),
+                ]
+        return nuevas_urls + urls
+    
+    def aprobar(self, request):
+        print('Aprobado mostro')
 
     # Solo muestro las solicitudes de la universidad correspondiente al usuario actual
     def get_queryset(self, request):

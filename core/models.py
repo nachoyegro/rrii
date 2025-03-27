@@ -54,8 +54,7 @@ class Alumno(models.Model):
         return '%s - %s, %s' % (self.legajo, self.apellido, self.nombre)
 
 # TODO: diferenciar entre convocatorias propias y extranjeras
-class Convocatoria(models.Model):
-    universidad = models.ForeignKey(Universidad, on_delete=models.SET_NULL, blank=True, null=True)
+class ConvocatoriaUNQ(models.Model):
     carrera = models.ForeignKey(Carrera, on_delete=models.SET_NULL, blank=True, null=True)
     anio = models.IntegerField(verbose_name="Año")
     activa = models.BooleanField(default=False)
@@ -69,6 +68,15 @@ class Convocatoria(models.Model):
 class SolicitudAlumno(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.SET_NULL, blank=True, null=True)
     convocatoria = models.ForeignKey(Convocatoria, on_delete=models.SET_NULL, blank=True, null=True)
+    estado = models.CharField(choices=(('p', 'Pendiente'), ('a', 'Aprobado'), ('r', 'rechazado')), max_length=1, default='p')
+
+    class Meta:
+        verbose_name = "Solicitud"
+        verbose_name_plural = "Solicitudes"    
+
+    def __str__(self):
+        return '%s - %s' % (self.convocatoria, self.alumno)
+
 
 class UserProfile(models.Model):  
     user = models.ForeignKey(User, unique=True, on_delete=models.CASCADE)

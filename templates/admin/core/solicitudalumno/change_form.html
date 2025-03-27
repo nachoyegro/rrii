@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools %}
+        {% if object_id and false %}
+            <ul class="pull-right">
+                <li style="display:inline;"><a href="/admin/core/solicitudalumno/{{object_id}}/aprobar/" class="btn btn-primary default">Aprobar</a></li>
+            </ul>    
+	    {% endif %}
+        <!--
+        <form action="/admin/core/solicitudalumno/{{object_id}}/aprobar/" method="post">
+            {% csrf_token%}
+            <button type="submit">Aprobar</button>
+        </form>
+        -->
+{% endblock %}

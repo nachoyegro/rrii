@@ -2,6 +2,7 @@ version: '3.2'
 services:
   rrii:
     image: nachoyegro/rrii:0.0.4
+    build: .
     container_name: rrii
     restart: always
     volumes:

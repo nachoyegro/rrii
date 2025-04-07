@@ -17,9 +17,11 @@ class FiltradoUniversidadAdmin(admin.ModelAdmin):
         return qs.filter(universidad=profile.universidad)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        universidad = UserProfile.objects.get(user=request.user).universidad
         if not request.user.is_superuser and db_field.name == "universidad":
-            universidad = UserProfile.objects.get(user=request.user).universidad
             kwargs["queryset"] = Universidad.objects.filter(pk=universidad.pk) #Hago esto para transformarlo en queryset
+        if not request.user.is_superuser and db_field.name == "alumno":
+            kwargs["queryset"] = Alumno.objects.filter(universidad=universidad)  #Hago esto para transformarlo en queryset
         return super(FiltradoUniversidadAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
  
     def save_model(self, request, obj, form, change):
@@ -32,25 +34,42 @@ class UniversidadAdmin(admin.ModelAdmin):
 class CarreraAdmin(admin.ModelAdmin):
     list_display = ('universidad', 'nombre', )
 
-class ProgramaAdmin(admin.ModelAdmin):
-    list_display = ('carrera', 'nombre')
-
-class MateriaAdmin(admin.ModelAdmin):
-    list_display = ('carrera', 'nombre')
-
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
+    extra = 0
 
 class UserProfileAdmin(UserAdmin):
     inlines = [UserProfileInline,]
 
-class ConvocatoriaAdmin(admin.ModelAdmin):
-    list_display = ('universidad', 'carrera', 'anio', 'activa')
-
 class AlumnoAdmin(FiltradoUniversidadAdmin):
     list_display = ('legajo', 'apellido', 'nombre', 'universidad')
 
-class SolicitudAlumnoAdmin(admin.ModelAdmin):
+class ConvocatoriaUNQUniversidadInline(admin.TabularInline):
+    model = ConvocatoriaUNQUniversidad
+    extra = 0
+
+class ConvocatoriaUNQAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'anio', 'plazas', 'activa')
+    filter_horizontal = ('carreras',)
+    inlines = [ConvocatoriaUNQUniversidadInline,]
+
+class ConvocatoriaUNQPostulacionAdmin(FiltradoUniversidadAdmin):
+    list_display = ('convocatoria', 'alumno', 'estado')
+    exclude = ('estado', )
+
+    def get_queryset(self, request):
+        qs = super(FiltradoUniversidadAdmin, self).get_queryset(request)
+        # Si el usuario es SuperUsuario, puede ver el queryset completo
+        if request.user.is_superuser:
+            return qs
+        # Sino, filtro el queryset en base a su universidad asignada
+        profile = UserProfile.objects.get(user=request.user)
+        return qs.filter(alumno__universidad=profile.universidad)
+
+class ConvocatoriaExternaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'universidad', 'anio', 'activa')
+
+class ConvocatoriaExternaSolicitudAdmin(admin.ModelAdmin):
     list_display = ('convocatoria', 'alumno', 'estado')
     readonly_fields = ('estado',)
 
@@ -64,9 +83,11 @@ class SolicitudAlumnoAdmin(admin.ModelAdmin):
     def aprobar(self, request):
         print('Aprobado mostro')
 
+    """
+    ### ESTO SOLO SERVIA CUANDO LAS CONVOCATORIAS ESTABAN UNIFICADAS.
     # Solo muestro las solicitudes de la universidad correspondiente al usuario actual
     def get_queryset(self, request):
-        qs = super(SolicitudAlumnoAdmin, self).get_queryset(request)
+        qs = super(ConvocatoriaExternaSolicitudAdmin, self).get_queryset(request)
         # Si el usuario es SuperUsuario, puede ver el queryset completo
         if request.user.is_superuser:
             return qs
@@ -83,19 +104,21 @@ class SolicitudAlumnoAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = Alumno.objects.filter(universidad=universidad)  #Hago esto para transformarlo en queryset
             if db_field.name == "convocatoria":
                 # Si el usuario es externo, solo muestro las convocatorias de UNQ
-                kwargs["queryset"] = Convocatoria.objects.filter(universidad__sigla='UNQ') 
+                kwargs["queryset"] = ConvocatoriaExterna.objects.filter(universidad__sigla='UNQ') 
         # TODO: filtrar convocatorias segun corresponda al perfil de usuario
-        return super(SolicitudAlumnoAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+        return super(ConvocatoriaExternaSolicitudAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+    """
 
 admin.site.unregister(User)
 admin.site.register(User, UserProfileAdmin)
 admin.site.register(Universidad, UniversidadAdmin)
 admin.site.register(Carrera, CarreraAdmin)
-admin.site.register(Programa, ProgramaAdmin)
-admin.site.register(Materia, MateriaAdmin)
-admin.site.register(SolicitudAlumno, SolicitudAlumnoAdmin)
-admin.site.register(Convocatoria, ConvocatoriaAdmin)
 admin.site.register(Alumno, AlumnoAdmin)
+admin.site.register(ConvocatoriaExterna, ConvocatoriaExternaAdmin)
+admin.site.register(ConvocatoriaExternaSolicitud, ConvocatoriaExternaSolicitudAdmin)
+admin.site.register(ConvocatoriaUNQ, ConvocatoriaUNQAdmin)
+admin.site.register(ConvocatoriaUNQPostulacion, ConvocatoriaUNQPostulacionAdmin)
+
 admin.site.site_header = "Relaciones Internacionales"
 admin.site.site_title = "Relaciones Internacionales"
 admin.site.index_title = "Relaciones Internacionales"

@@ -4,8 +4,17 @@
 }
 
 #site-name {
+    margin-top: 0.2em;
     margin-left: 1em;
-    font-size: 2em;
+    font-size: 2.5em;
+}
+
+#site-name a {
+    color: var(--primary);
+    text-decoration: none;
+}
+#site-name a:visited {
+    color: var(--header-color);
 }
 
 .img-header {

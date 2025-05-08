@@ -1,6 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.urls import path, include
+from django.utils.html import format_html
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from core.services import ServiceCambioEstadoPostulacionUNQ
 from core.models import *
 from core.views import *
 
@@ -65,6 +69,71 @@ class ConvocatoriaUNQPostulacionAdmin(FiltradoUniversidadAdmin):
         # Sino, filtro el queryset en base a su universidad asignada
         profile = UserProfile.objects.get(user=request.user)
         return qs.filter(alumno__universidad=profile.universidad)
+
+    def changelist_view(self, request, extra_context=None):
+        # Store the request object for use in other methods
+        self.request = request
+        return super().changelist_view(request, extra_context)
+
+    def acciones(self, obj):
+        # Muestro los botones si el usuario es superuser
+        if hasattr(self, 'request') and self.request.user.is_superuser:
+            # Si el estado es pendiente, muestro los botones
+            aprobar_button = (
+                '<a class="button" style="margin-right: 5px; background-color: #28a745; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none;" href="{}">'
+                '&#x2714;</a>'.format('aprobar/{}'.format(obj.pk))
+                if obj.estado == "p" else ""
+            )
+            rechazar_button = (
+                '<a class="button" style="margin-left: 5px; background-color: #dc3545; color: white; padding: 5px 10px; border-radius: 5px; text-decoration: none;" href="{}">'
+                '&#x2716;</a>'.format('rechazar/{}'.format(obj.pk))
+                if obj.estado == "p" else ""
+            )
+            return format_html(aprobar_button + rechazar_button)
+        return ""
+
+    acciones.short_description = 'Acciones'
+
+    def get_urls(self):
+        """
+        Añadir URL personalizada para la acción de marcar como aprobado
+        """
+        urls = super().get_urls()
+        custom_urls = [
+            path('aprobar/<int:id_postulacion>/', self.aprobar),
+            path('rechazar/<int:id_postulacion>/', self.rechazar),
+        ]
+        return custom_urls + urls
+
+    def get_list_display(self, request):
+        # Agregar un botón en cada fila del listado
+        return super().get_list_display(request) + ('acciones', )
+    
+    def aprobar(self, request, id_postulacion):
+        previous_url = request.META['HTTP_REFERER']
+        service_estados = ServiceCambioEstadoPostulacionUNQ()
+        try:  
+            profile = UserProfile.objects.get(user=request.user)
+            postulacion = ConvocatoriaUNQPostulacion.objects.get(pk=id_postulacion)
+            service_estados.aprobar(profile=profile, postulacion=postulacion) 
+        except Exception as err:
+            self.message_user(request, "Ocurrio un error al aprobar la solicitud : {}".format(str(err)), level=messages.ERROR)
+            return HttpResponseRedirect(previous_url)
+        self.message_user(request, "Se aprobó la solicitud : {}".format(str(profile)))
+        return HttpResponseRedirect(previous_url)
+    
+    def rechazar(self, request, id_postulacion):
+        previous_url = request.META['HTTP_REFERER']
+        service_estados = ServiceCambioEstadoPostulacionUNQ()
+        try:  
+            profile = UserProfile.objects.get(user=request.user)
+            postulacion = ConvocatoriaUNQPostulacion.objects.get(pk=id_postulacion)
+            service_estados.rechazar(profile=profile, postulacion=postulacion) 
+        except Exception as err:
+            self.message_user(request, "Ocurrio un error al rechazar la solicitud : {}".format(str(err)), level=messages.ERROR)
+            return HttpResponseRedirect(previous_url)
+        self.message_user(request, "Se rechazó la solicitud : {}".format(str(profile)))
+        return HttpResponseRedirect(previous_url)
 
 class ConvocatoriaExternaAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'universidad', 'anio', 'activa')

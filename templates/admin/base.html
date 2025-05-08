@@ -35,6 +35,9 @@
     {% block header %}
       <header id="header" class="header-padding">
         <div id="branding">
+          <div class="login-logo">
+            <img src="{% static 'admin/img/unq-logo.png' %}" alt="Logo" style="max-width: 50px; margin-bottom: 10px;">
+          </div>
         {% block branding %}{% endblock %}
         </div>
         {% block usertools %}

@@ -116,7 +116,7 @@ class ConvocatoriaExternaSolicitud(models.Model):
     convocatoria = models.ForeignKey(ConvocatoriaExterna, on_delete=models.CASCADE)
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE) #Filtrados por alumnos UNQ
     descripcion = models.TextField(blank=True, null=True) # Lo que puso en el formulario, puede reemplazarse por todos los datos separados
-    estado = models.CharField(choices=(('p', 'Pendiente'), ('a', 'Aprobado'), ('r', 'rechazado')), max_length=1, default='p')
+    estado = models.CharField(choices=(('p', 'Pendiente'), ('a', 'Aprobado'), ('r', 'Rechazado')), max_length=1, default='p')
 
     class Meta:
         verbose_name = "Postulación"
